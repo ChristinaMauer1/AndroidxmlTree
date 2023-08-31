@@ -1,5 +1,6 @@
 class CompNode:
-    def __init__(self, bound):
+    def __init__(self, parent, bound):
+        self.parent = parent
         self.children = []
         self.boundaries = bound
 
@@ -8,13 +9,40 @@ class CompNode:
     def getChildren():
         return children
 
+def countSpace(string):
+    count = 0
+    for i in string:
+        if i == ' ':
+            count += 1
 
-root = CompNode(0)
-m = CompNode(1)
-root.children.append(m)
-m = CompNode(2)
-root.children.append(m)
-m = CompNode(3)
-root.children.append(m)
-for i in root.children:
-    print(i.boundaries)
+def getBounds(string):
+    string = string.lstrip()
+    bounds = string[14, string.index("checkable") - 3]
+    return bounds
+
+root = None
+
+def parseXML(file):
+    prevSpace = -1
+    curNode = None
+    prevNode = None
+    for line in file:
+        if line.startswith(' '):
+            spaces = countSpace(line)
+            bounds = getBounds(line)
+            if curNode == None and prevNode == None:
+                node = CompNode(None, bounds)
+                root = node
+                curNode = node
+                prevSpace = spaces
+            else:
+                if spaces > prevSpace:
+                    node = CompNode(curNode, bounds)
+                    prevNode = curNode
+                    curNode = node
+                    prevSpace = spaces
+                    prevNode.addChild(curNode)
+                else:
+                    node = CompNode(prevNode, bounds)
+                    prevNode.addChild(node)
+                    curNode = node
