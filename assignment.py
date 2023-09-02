@@ -1,10 +1,12 @@
+import queue
+
 class CompNode:
     def __init__(self, parent, bound):
         self.parent = parent
         self.children = []
         self.boundaries = bound
 
-    def addChild(node):
+    def addChild(self, node):
         self.children.append(node)
     def getChildren():
         return children
@@ -12,37 +14,75 @@ class CompNode:
 def countSpace(string):
     count = 0
     for i in string:
-        if i == ' ':
+        if i == '\t':
             count += 1
+    return count
 
 def getBounds(string):
     string = string.lstrip()
-    bounds = string[14, string.index("checkable") - 3]
+    bounds = string[14: string.index("checkable") - 2]
     return bounds
 
 root = None
 
-def parseXML(file):
+f = open("com.apalon.ringtones.xml", "r")
+
+
+def parseXML(file, root):
     prevSpace = -1
     curNode = None
     prevNode = None
     for line in file:
-        if line.startswith(' '):
+        if line.startswith("\t"):
             spaces = countSpace(line)
-            bounds = getBounds(line)
-            if curNode == None and prevNode == None:
+            if line.lstrip().startswith("</node>"):
+                curNode = prevNode
+                prevNode = curNode.parent
+                prevSpace = spaces
+            elif curNode == None and prevNode == None:
+                bounds = getBounds(line)
                 node = CompNode(None, bounds)
                 root = node
                 curNode = node
                 prevSpace = spaces
             else:
                 if spaces > prevSpace:
+                    bounds = getBounds(line)
                     node = CompNode(curNode, bounds)
                     prevNode = curNode
                     curNode = node
                     prevSpace = spaces
                     prevNode.addChild(curNode)
-                else:
+                elif spaces == prevSpace:
+                    bounds = getBounds(line)
                     node = CompNode(prevNode, bounds)
                     prevNode.addChild(node)
                     curNode = node
+                else:
+                    bounds = getBounds(line)
+                    prevNode = prevNode.parent
+                    node = CompNode(prevNode, bounds)
+                    prevNode.addChild(node)
+                    curNode = node
+                    prevSpace = spaces
+    return root
+
+root = parseXML(f, root)
+
+q = queue.Queue()
+q.put(root)
+
+leaves = []
+
+while not q.empty():
+    node = q.get()
+    if len(node.children) == 0:
+        leaves.append(node)
+    else:
+        for i in node.children:
+            q.put(i)
+    print(node.boundaries)
+print()
+print()
+for k in leaves:
+    print(k.boundaries)
