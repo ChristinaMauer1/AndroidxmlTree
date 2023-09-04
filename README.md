@@ -2,7 +2,7 @@
 
 Written in Python 3.11  
 
-How to run in command prompt: python assignment.py xmlFileName pngFileName
+How to run in command prompt: python assignment.py xmlFileName pngFileName  i.e. "python assignment.py com.apalon.ringtones.xml com.apalon.ringtones.png"
 
 Output is saved as a file named output + pngFileName i.e. "outputcom.apalon.ringtones.png"
 
