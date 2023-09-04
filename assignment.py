@@ -13,21 +13,29 @@ class CompNode:
     def getChildren():
         return children
 
-def countSpace(string):
+def countTabs(string):
     count = 0
     for i in string:
         if i == '\t':
             count += 1
     return count
 
+def countSpace(string):
+    count = 0
+    for i in string:
+        if i == " ":
+            count += 1
+    return count
+
 def getBounds(string):
     string = string.lstrip()
-    bounds = string[14: string.index("checkable") - 2]
+    start = string.find("bounds=") + 8
+    end = string.find('"', start)
+    bounds = string[start:end]
     return bounds
 
 xml = sys.argv[1]
 picture = sys.argv[2]
-
 root = None
 
 f = open(xml, "r")
@@ -39,6 +47,38 @@ def parseXML(file, root):
     prevNode = None
     for line in file:
         if line.startswith("\t"):
+            spaces = countTabs(line)
+            if line.lstrip().startswith("</node>"):
+                curNode = prevNode
+                prevNode = curNode.parent
+                prevSpace = spaces
+            elif curNode == None and prevNode == None:
+                bounds = getBounds(line)
+                node = CompNode(None, bounds)
+                root = node
+                curNode = node
+                prevSpace = spaces
+            else:
+                if spaces > prevSpace:
+                    bounds = getBounds(line)
+                    node = CompNode(curNode, bounds)
+                    prevNode = curNode
+                    curNode = node
+                    prevSpace = spaces
+                    prevNode.addChild(curNode)
+                elif spaces == prevSpace:
+                    bounds = getBounds(line)
+                    node = CompNode(prevNode, bounds)
+                    prevNode.addChild(node)
+                    curNode = node
+                else:
+                    bounds = getBounds(line)
+                    prevNode = prevNode.parent
+                    node = CompNode(prevNode, bounds)
+                    prevNode.addChild(node)
+                    curNode = node
+                    prevSpace = spaces
+        elif line.startswith(" "):
             spaces = countSpace(line)
             if line.lstrip().startswith("</node>"):
                 curNode = prevNode
@@ -86,8 +126,6 @@ while not q.empty():
     else:
         for i in node.children:
             q.put(i)
-
-
 leafBounds = []
 for k in leaves:
     b = k.boundaries
@@ -98,7 +136,7 @@ for k in leaves:
     bound.append(bottomRight)
     leafBounds.append(bound)
 
-YELLOW = (255,255,0)
+YELLOW = (241,231,64)
 
 img = Image.open(picture)
 
@@ -107,7 +145,10 @@ pixels = img.load()
 
 for b in leafBounds:
     topLeft = b[0]
+    topRight = [b[0][0], b[1][1]]
+    bottomLeft = [b[1][0], b[0][1]]
     bottomRight = b[1]
+
     for i in range(topLeft[0], bottomRight[0]):
         pixels[i, topLeft[1]] = YELLOW
         pixels[i, bottomRight[1]-1] = YELLOW
