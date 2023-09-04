@@ -156,16 +156,17 @@ pixels = img.load()
 
 for b in leafBounds:
     topLeft = b[0]
-    topRight = [b[0][0], b[1][1]]
-    bottomLeft = [b[1][0], b[0][1]]
     bottomRight = b[1]
 
     for i in range(topLeft[0], bottomRight[0]):
         pixels[i, topLeft[1]] = YELLOW
+        pixels[i, topLeft[1] + 1] = YELLOW
         pixels[i, bottomRight[1]-1] = YELLOW
+        pixels[i, bottomRight[1]-2] = YELLOW
     for j in range(topLeft[1], bottomRight[1]):
         pixels[topLeft[0], j] = YELLOW
+        pixels[topLeft[0] + 1, j] = YELLOW
         pixels[bottomRight[0] - 1, j] = YELLOW
+        pixels[bottomRight[0] - 2, j] = YELLOW
 
 img.save("output" + picture, format="png")
-
