@@ -1,4 +1,5 @@
 import queue
+from PIL import Image
 
 class CompNode:
     def __init__(self, parent, bound):
@@ -84,5 +85,16 @@ while not q.empty():
     print(node.boundaries)
 print()
 print()
+
+leafBounds = []
 for k in leaves:
+    b = k.boundaries
+    bound = []
+    topLeft = [int(b[1:b.find(",")]), int(b[b.find(",") +1: b.find("]")])]
+    bottomRight = [int(b[b.find("]") + 2:b.find(",", b.find("]") + 1)]), int(b[b.find(",", b.find("]") + 1) +1: b.find("]", b.find("]") + 1)])]
     print(k.boundaries)
+    print(topLeft, bottomRight)
+
+
+#img = Image.open("com.apalon.ringtones.png")
+#img.show()
