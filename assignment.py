@@ -1,3 +1,4 @@
+import sys
 import queue
 from PIL import Image
 
@@ -24,9 +25,12 @@ def getBounds(string):
     bounds = string[14: string.index("checkable") - 2]
     return bounds
 
+xml = sys.argv[1]
+picture = sys.argv[2]
+
 root = None
 
-f = open("com.apalon.ringtones.xml", "r")
+f = open(xml, "r")
 
 
 def parseXML(file, root):
@@ -82,9 +86,7 @@ while not q.empty():
     else:
         for i in node.children:
             q.put(i)
-    print(node.boundaries)
-print()
-print()
+
 
 leafBounds = []
 for k in leaves:
@@ -92,9 +94,25 @@ for k in leaves:
     bound = []
     topLeft = [int(b[1:b.find(",")]), int(b[b.find(",") +1: b.find("]")])]
     bottomRight = [int(b[b.find("]") + 2:b.find(",", b.find("]") + 1)]), int(b[b.find(",", b.find("]") + 1) +1: b.find("]", b.find("]") + 1)])]
-    print(k.boundaries)
-    print(topLeft, bottomRight)
+    bound.append(topLeft)
+    bound.append(bottomRight)
+    leafBounds.append(bound)
+
+YELLOW = (255,255,0)
+
+img = Image.open(picture)
+
+pixels = img.load()
 
 
-#img = Image.open("com.apalon.ringtones.png")
-#img.show()
+for b in leafBounds:
+    topLeft = b[0]
+    bottomRight = b[1]
+    for i in range(topLeft[0], bottomRight[0]):
+        pixels[i, topLeft[1]] = YELLOW
+        pixels[i, bottomRight[1]-1] = YELLOW
+    for j in range(topLeft[1], bottomRight[1]):
+        pixels[topLeft[0], j] = YELLOW
+        pixels[bottomRight[0] - 1, j] = YELLOW
+
+img.save("output" + picture, format="png")
