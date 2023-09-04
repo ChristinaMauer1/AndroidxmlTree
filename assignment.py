@@ -3,10 +3,11 @@ import queue
 from PIL import Image
 
 class CompNode:
-    def __init__(self, parent, bound):
+    def __init__(self, parent, bound, name):
         self.parent = parent
         self.children = []
         self.boundaries = bound
+        self.name = name
 
     def addChild(self, node):
         self.children.append(node)
@@ -22,7 +23,7 @@ def countTabs(string):
 
 def countSpace(string):
     count = 0
-    for i in string:
+    for i in string[:string.find("<") +1]:
         if i == " ":
             count += 1
     return count
@@ -40,8 +41,9 @@ root = None
 
 f = open(xml, "r")
 
+name = 0
 
-def parseXML(file, root):
+def parseXML(file, root, name):
     prevSpace = -1
     curNode = None
     prevNode = None
@@ -54,27 +56,31 @@ def parseXML(file, root):
                 prevSpace = spaces
             elif curNode == None and prevNode == None:
                 bounds = getBounds(line)
-                node = CompNode(None, bounds)
+                node = CompNode(None, bounds, name)
+                name += 1
                 root = node
                 curNode = node
                 prevSpace = spaces
             else:
                 if spaces > prevSpace:
                     bounds = getBounds(line)
-                    node = CompNode(curNode, bounds)
+                    node = CompNode(curNode, bounds, name)
+                    name += 1
                     prevNode = curNode
                     curNode = node
                     prevSpace = spaces
                     prevNode.addChild(curNode)
                 elif spaces == prevSpace:
                     bounds = getBounds(line)
-                    node = CompNode(prevNode, bounds)
+                    node = CompNode(prevNode, bounds, name)
+                    name += 1
                     prevNode.addChild(node)
                     curNode = node
                 else:
                     bounds = getBounds(line)
                     prevNode = prevNode.parent
-                    node = CompNode(prevNode, bounds)
+                    node = CompNode(prevNode, bounds, name)
+                    name += 1
                     prevNode.addChild(node)
                     curNode = node
                     prevSpace = spaces
@@ -86,33 +92,37 @@ def parseXML(file, root):
                 prevSpace = spaces
             elif curNode == None and prevNode == None:
                 bounds = getBounds(line)
-                node = CompNode(None, bounds)
+                node = CompNode(None, bounds, name)
+                name += 1
                 root = node
                 curNode = node
                 prevSpace = spaces
             else:
                 if spaces > prevSpace:
                     bounds = getBounds(line)
-                    node = CompNode(curNode, bounds)
+                    node = CompNode(curNode, bounds, name)
+                    name += 1
                     prevNode = curNode
                     curNode = node
                     prevSpace = spaces
                     prevNode.addChild(curNode)
                 elif spaces == prevSpace:
                     bounds = getBounds(line)
-                    node = CompNode(prevNode, bounds)
+                    node = CompNode(curNode, bounds, name)
+                    name += 1
                     prevNode.addChild(node)
                     curNode = node
                 else:
                     bounds = getBounds(line)
                     prevNode = prevNode.parent
-                    node = CompNode(prevNode, bounds)
+                    node = CompNode(prevNode, bounds, name)
+                    name += 1
                     prevNode.addChild(node)
                     curNode = node
                     prevSpace = spaces
     return root
 
-root = parseXML(f, root)
+root = parseXML(f, root, name)
 
 q = queue.Queue()
 q.put(root)
@@ -126,6 +136,7 @@ while not q.empty():
     else:
         for i in node.children:
             q.put(i)
+
 leafBounds = []
 for k in leaves:
     b = k.boundaries
@@ -157,3 +168,4 @@ for b in leafBounds:
         pixels[bottomRight[0] - 1, j] = YELLOW
 
 img.save("output" + picture, format="png")
+
